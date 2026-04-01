@@ -161,17 +161,17 @@
       <div id="entryStepType">
         <div class="entry-btns">
           <button id="adminBtn" class="entry-btn secondary"><span class="entry-btn-icon">⚙</span><span>관리자</span></button>
-          <button id="participantBtn" class="entry-btn primary"><span class="entry-btn-icon">◎</span><span>참여자로 입장</span></button>
+          <button id="investorBtn" class="entry-btn primary"><span class="entry-btn-icon">◎</span><span>투자자로 입장</span></button>
         </div>
       </div>
-      <div id="entryStepParticipant" style="display:none;margin-top:20px;">
+      <div id="entryStepInvestor" style="display:none;margin-top:20px;">
         <div class="field">
-          <label class="field-label">참여자 선택</label>
-          <select id="entryParticipantSelect" class="field-input"><option value="">불러오는 중...</option></select>
+          <label class="field-label">투자자 선택</label>
+          <select id="entryInvestorSelect" class="field-input"><option value="">불러오는 중...</option></select>
         </div>
         <div class="entry-btns" style="margin-top:14px;">
-          <button id="entryParticipantBack" class="entry-btn secondary small">뒤로</button>
-          <button id="entryParticipantEnter" class="entry-btn primary">투자 시작 →</button>
+          <button id="entryInvestorBack" class="entry-btn secondary small">뒤로</button>
+          <button id="entryInvestorEnter" class="entry-btn primary">투자 시작 →</button>
         </div>
       </div>
     </div>
@@ -215,7 +215,7 @@
       </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="teams">팀 목록</button>
-        <button class="tab-btn" data-tab="participants">참여자 목록</button>
+        <button class="tab-btn" data-tab="investors">투자자 목록</button>
         <button class="tab-btn" data-tab="investments">투자내역</button>
       </div>
       <div id="teamsTab" class="tab-content active">
@@ -229,11 +229,11 @@
         <div class="hint">※ 이미지파일명은 구글드라이브 이미지 폴더 안 파일명과 정확히 같아야 합니다. 예: team1.jpg</div>
         <div class="hint">※ 모인포인트/투자자수는 투자내역 기준으로 자동 계산됩니다.</div>
       </div>
-      <div id="participantsTab" class="tab-content">
-        <div class="section-header"><h2>참여자 목록</h2><button id="addParticipantBtn" class="add-btn">+ 행 추가</button></div>
+      <div id="investorsTab" class="tab-content">
+        <div class="section-header"><h2>투자자 목록</h2><button id="addInvestorBtn" class="add-btn">+ 행 추가</button></div>
         <div class="table-wrapper">
-          <table id="participantsTable" class="data-table">
-            <thead><tr><th>참여자명</th><th>소속팀</th><th>기본포인트</th><th>사용포인트</th><th>남은포인트</th><th>삭제</th></tr></thead>
+          <table id="investorsTable" class="data-table">
+            <thead><tr><th>연번</th><th>투자자명</th><th>소속팀</th><th>기본포인트</th><th>사용포인트</th><th>남은포인트</th><th>삭제</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -244,7 +244,7 @@
         <div class="section-header"><h2>투자내역</h2><button id="clearInvestmentsBtn" class="delete-all-btn">전체 삭제</button></div>
         <div class="table-wrapper">
           <table id="investmentsTable" class="data-table">
-            <thead><tr><th>일시</th><th>참여자명</th><th>팀명</th><th>투자금액</th><th>삭제</th></tr></thead>
+            <thead><tr><th>일시</th><th>투자자명</th><th>투자자팀명</th><th>피투자팀명</th><th>투자금액</th><th>삭제</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -254,17 +254,17 @@
   </div>
 
   <!-- Participant Page -->
-  <div id="participantPage" class="page" style="display:none;">
+  <div id="investorPage" class="page" style="display:none;">
     <div class="container">
       <div class="participant-header">
         <div class="participant-info">
-          <div class="participant-avatar" id="participantAvatar">?</div>
+          <div class="participant-avatar" id="investorAvatar">?</div>
           <div class="participant-meta">
-            <div class="participant-name" id="fixedParticipantName"></div>
-            <div class="participant-team muted">소속팀: <span id="fixedParticipantTeam">-</span></div>
+            <div class="participant-name" id="fixedInvestorName"></div>
+            <div class="participant-team muted">소속팀: <span id="fixedInvestorTeam">-</span></div>
           </div>
         </div>
-        <button id="participantResetBtn" class="ghost-btn small">다시 선택</button>
+        <button id="investorResetBtn" class="ghost-btn small">다시 선택</button>
       </div>
       <div class="points-card" id="pointsCard" style="display:none;">
         <div class="points-item"><div class="points-label">기본포인트</div><div class="points-value" id="basePoints">0</div></div>
