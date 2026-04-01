@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>모의 투자 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f6f5f2; --surface:#fff; --surface-2:#f9f8f6;
+      --border:#e8e5df; --border-soft:#f0ede8;
+      --ink:#18181b; --ink-2:#3f3f46; --ink-muted:#8c8880;
+      --accent:#18181b; --accent-fg:#fff;
+      --green:#065f46; --green-bg:#ecfdf5; --green-border:#6ee7b7;
+      --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-border:#93c5fd;
+      --amber:#92400e; --amber-bg:#fffbeb; --amber-border:#fcd34d;
+      --red:#991b1b; --red-bg:#fef2f2; --red-border:#fca5a5;
+      --r-xs:6px; --r-sm:10px; --r:16px; --r-lg:22px; --r-full:9999px;
+      --sh-xs:0 1px 2px rgba(24,24,27,.05);
+      --sh-sm:0 2px 8px rgba(24,24,27,.07),0 1px 2px rgba(24,24,27,.04);
+      --sh:0 8px 24px rgba(24,24,27,.09),0 2px 6px rgba(24,24,27,.05);
+      --sh-lg:0 20px 60px rgba(24,24,27,.13),0 6px 18px rgba(24,24,27,.07);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+    h1,h2{margin:0}
+    h1{font-size:20px;font-weight:800;letter-spacing:-.03em}
+    h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+    .muted{color:var(--ink-muted);font-size:12px}
+    .hint{margin-top:8px;color:var(--ink-muted);font-size:12px}
+    .container{max-width:1060px;margin:0 auto;padding:20px 18px 40px}
+    .page{animation:fadeUp .25s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .logo-icon{font-size:22px;color:var(--ink);display:inline-block}
+    .logo-icon.small{font-size:16px}
+    .logo-text{font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:16px;margin-bottom:4px;border-bottom:1px solid var(--border)}
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .tabs{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin:16px 0}
+    .tab-btn{flex:1;border:none;background:transparent;padding:9px 10px;border-radius:calc(var(--r) - 4px);cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-muted);transition:all .15s;font-family:inherit}
+    .tab-btn:hover:not(.active){color:var(--ink);background:rgba(24,24,27,.04)}
+    .tab-btn.active{background:var(--surface);color:var(--ink);font-weight:800;box-shadow:var(--sh-xs)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .add-btn{background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:var(--r-sm);cursor:pointer;font-weight:600;font-size:12px;color:var(--ink-2);font-family:inherit;transition:all .15s}
+    .add-btn:hover{background:var(--surface-2)}
+    .delete-all-btn{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);padding:7px 13px;border-radius:var(--r-sm);cursor:pointer;font-weight:600;font-size:12px;font-family:inherit;transition:all .15s}
+    .delete-all-btn:hover{filter:brightness(.96)}
+    .save-btn{margin-top:20px;width:100%;background:var(--accent);color:var(--accent-fg);border:none;padding:14px;border-radius:var(--r);cursor:pointer;font-weight:800;font-size:14px;font-family:inherit;letter-spacing:-.01em;transition:opacity .15s}
+    .save-btn:hover{opacity:.86}
+    .ghost-btn{background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:var(--r-sm);cursor:pointer;font-weight:600;font-size:12px;color:var(--ink-2);font-family:inherit;transition:all .15s}
+    .ghost-btn:hover{background:var(--surface-2)}
+    .ghost-btn.small{padding:6px 11px}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .entry-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+    .entry-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:var(--r);cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;border:1px solid transparent;transition:all .15s}
+    .entry-btn.primary{background:var(--accent);color:var(--accent-fg)}
+    .entry-btn.primary:hover{opacity:.86}
+    .entry-btn.secondary{background:var(--surface-2);color:var(--ink-2);border-color:var(--border)}
+    .entry-btn.secondary:hover{background:var(--border-soft)}
+    .entry-btn.small{padding:10px 14px;font-size:13px}
+    .entry-btn-icon{font-size:16px}
+    .table-wrapper{border:1px solid var(--border);border-radius:var(--r);overflow:auto;background:var(--surface);box-shadow:var(--sh-xs)}
+    .data-table{width:100%;border-collapse:collapse;min-width:860px}
+    .data-table th,.data-table td{border-bottom:1px solid var(--border-soft);padding:9px 11px;font-size:12px;vertical-align:top;font-family:inherit}
+    .data-table th{background:var(--surface-2);text-align:left;font-weight:700;color:var(--ink-muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table input,.data-table textarea{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--r-xs);outline:none;font-size:12px;font-family:inherit;background:var(--surface);color:var(--ink);box-sizing:border-box;transition:border-color .15s}
+    .data-table input:focus,.data-table textarea:focus{border-color:var(--ink-muted)}
+    .data-table textarea{min-height:58px;resize:vertical}
+    select.field-input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-family:inherit;background:var(--surface);color:var(--ink);outline:none;transition:border-color .15s;cursor:pointer}
+    select.field-input:focus{border-color:var(--ink-muted)}
+    .readonly{background:var(--surface-2)!important;color:var(--ink-muted)!important;pointer-events:none}
+    .delete-row-btn{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);padding:5px 9px;border-radius:var(--r-xs);cursor:pointer;font-size:11px;font-family:inherit;font-weight:600;white-space:nowrap}
+    .delete-row-btn:hover{filter:brightness(.95)}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(24,24,27,.48);backdrop-filter:blur(5px);z-index:1000}
+    .modal-content{width:min(440px,92vw);background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:28px 24px;box-shadow:var(--sh-lg);animation:modalIn .2s cubic-bezier(.34,1.4,.64,1)}
+    @keyframes modalIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-logo{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+    .modal-title{font-size:20px;font-weight:800;letter-spacing:-.03em;color:var(--ink);margin:0 0 4px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field-label{font-size:11px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em}
+    .field-input{padding:11px 14px;border-radius:var(--r);border:1px solid var(--border);font-size:14px;font-family:inherit;color:var(--ink);background:var(--surface);outline:none;transition:border-color .15s}
+    .field-input:focus{border-color:var(--ink-muted)}
+    .error-text{color:var(--red);font-size:12px;margin:6px 0 0;min-height:16px}
+    .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-6px);background:var(--ink);color:#fff;padding:9px 16px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.1);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:2000;font-size:13px;font-weight:600;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.error{background:#b91c1c}
+    .loading-overlay{position:fixed;inset:0;background:rgba(24,24,27,.7);display:flex;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(3px)}
+    .loading-box{display:flex;flex-direction:column;align-items:center;gap:14px;color:#fff;text-align:center}
+    .loading-spinner{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .75s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-size:20px;font-weight:800;letter-spacing:-.03em}
+    .loading-subtext{font-size:13px;opacity:.75}
+    .participant-header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;margin-bottom:12px;box-shadow:var(--sh-xs)}
+    .participant-info{display:flex;align-items:center;gap:11px}
+    .participant-avatar{width:38px;height:38px;border-radius:var(--r-full);background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+    .participant-name{font-weight:800;font-size:15px;letter-spacing:-.02em}
+    .participant-team{margin-top:1px}
+    .points-card{display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh-xs)}
+    .points-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;gap:4px}
+    .points-divider{width:1px;background:var(--border-soft);margin:10px 0}
+    .points-label{font-size:11px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.04em}
+    .points-value{font-size:22px;font-weight:900;letter-spacing:-.04em;color:var(--ink)}
+    .points-value.used{color:var(--amber)}
+    .points-value.remain{color:var(--green)}
+    .my-invest{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;margin-bottom:12px;box-shadow:var(--sh-xs)}
+    .my-invest-title{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);margin-bottom:10px}
+    .my-invest-list{display:flex;flex-direction:column;gap:6px}
+    .my-invest-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:9px 12px}
+    .mi-team{font-weight:700;font-size:13px}
+    .mi-amt{font-weight:900;font-size:13px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border);padding:3px 10px;border-radius:var(--r-full)}
+    .teams-container{display:flex;flex-direction:column;gap:12px}
+    .team-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow .2s,transform .2s}
+    .team-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+    .team-image{width:100%;max-height:260px;object-fit:cover;display:block;background:var(--surface-2)}
+    .team-image-placeholder{height:140px;background:var(--surface-2);border-bottom:1px solid var(--border-soft);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
+    .team-card-body{padding:16px}
+    .team-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+    .team-name{font-size:20px;font-weight:900;letter-spacing:-.03em;line-height:1.2}
+    .team-badge{flex-shrink:0;font-size:11px;font-weight:700;color:var(--ink-muted);border:1px solid var(--border);padding:4px 10px;border-radius:var(--r-full);background:var(--surface-2);white-space:nowrap}
+    .team-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .team-info-box{background:var(--surface-2);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:11px}
+    .team-info-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-bottom:4px}
+    .team-info-value{font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.55}
+    .investment-section{border-top:1px solid var(--border-soft);padding-top:13px}
+    .investment-notice{font-size:11px;color:var(--ink-muted);margin-bottom:8px}
+    .investment-notice.blocked{color:var(--red);background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r-xs);padding:6px 10px}
+    .investment-row{display:flex;gap:8px}
+    .investment-input{flex:1;padding:10px 13px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-family:inherit;background:var(--surface);color:var(--ink);outline:none;transition:border-color .15s}
+    .investment-input:focus{border-color:var(--ink-muted)}
+    .investment-input.error{border-color:var(--red)}
+    .invest-btn{padding:10px 16px;background:var(--ink);color:#fff;border:none;border-radius:var(--r-sm);font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+    .invest-btn:hover:not(:disabled){opacity:.82}
+    .input-error{color:var(--red);font-size:11px;margin-top:5px;min-height:15px}
+    @media(max-width:768px){
+      .container{padding:14px 13px 32px}
+      .topbar,.topbar-right,.participant-header{flex-wrap:wrap}
+      .points-card{flex-direction:column}
+      .points-divider{width:auto;height:1px;margin:0 10px}
+      .team-grid{grid-template-columns:1fr}
+      .tabs{flex-wrap:wrap;gap:4px}
+      .tab-btn{flex:none}
+      .loading-text{font-size:17px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Entry Modal -->
+  <div id="entryModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">모의 투자 플랫폼</span>
+      </div>
+      <h2 class="modal-title">접속 유형 선택</h2>
+      <div id="entryStepType">
+        <div class="entry-btns">
+          <button id="adminBtn" class="entry-btn secondary"><span class="entry-btn-icon">⚙</span><span>관리자</span></button>
+          <button id="participantBtn" class="entry-btn primary"><span class="entry-btn-icon">◎</span><span>참여자로 입장</span></button>
+        </div>
+      </div>
+      <div id="entryStepParticipant" style="display:none;margin-top:20px;">
+        <div class="field">
+          <label class="field-label">참여자 선택</label>
+          <select id="entryParticipantSelect" class="field-input"><option value="">불러오는 중...</option></select>
+        </div>
+        <div class="entry-btns" style="margin-top:14px;">
+          <button id="entryParticipantBack" class="entry-btn secondary small">뒤로</button>
+          <button id="entryParticipantEnter" class="entry-btn primary">투자 시작 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Password Modal -->
+  <div id="passwordModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2 class="modal-title">관리자 로그인</h2>
+      <div class="field" style="margin-top:18px;">
+        <label class="field-label">비밀번호</label>
+        <input type="password" id="passwordInput" class="field-input" placeholder="비밀번호를 입력하세요"/>
+      </div>
+      <p id="passwordError" class="error-text"></p>
+      <div class="entry-btns" style="margin-top:14px;">
+        <button id="passwordCancel" class="entry-btn secondary small">취소</button>
+        <button id="passwordSubmit" class="entry-btn primary">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-box">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">로딩중...</div>
+      <div class="loading-subtext">잠시만 기다려주세요</div>
+    </div>
+  </div>
+
+  <!-- Admin Page -->
+  <div id="adminPage" class="page" style="display:none;">
+    <div class="container">
+      <div class="topbar">
+        <div class="topbar-left"><span class="logo-icon small">◈</span><h1>관리자</h1></div>
+        <div class="topbar-right">
+          <span id="lastSyncText" class="muted">마지막 동기화: -</span>
+          <button id="syncBtn" class="ghost-btn">↻ 새로고침</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="teams">팀 목록</button>
+        <button class="tab-btn" data-tab="participants">참여자 목록</button>
+        <button class="tab-btn" data-tab="investments">투자내역</button>
+      </div>
+      <div id="teamsTab" class="tab-content active">
+        <div class="section-header"><h2>팀 목록</h2><button id="addTeamBtn" class="add-btn">+ 행 추가</button></div>
+        <div class="table-wrapper">
+          <table id="teamsTable" class="data-table">
+            <thead><tr><th>팀명</th><th>주제</th><th>세부설명</th><th>이미지파일명</th><th>모인포인트</th><th>투자자수</th><th>삭제</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="hint">※ 이미지파일명은 구글드라이브 이미지 폴더 안 파일명과 정확히 같아야 합니다. 예: team1.jpg</div>
+        <div class="hint">※ 모인포인트/투자자수는 투자내역 기준으로 자동 계산됩니다.</div>
+      </div>
+      <div id="participantsTab" class="tab-content">
+        <div class="section-header"><h2>참여자 목록</h2><button id="addParticipantBtn" class="add-btn">+ 행 추가</button></div>
+        <div class="table-wrapper">
+          <table id="participantsTable" class="data-table">
+            <thead><tr><th>참여자명</th><th>소속팀</th><th>기본포인트</th><th>사용포인트</th><th>남은포인트</th><th>삭제</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="hint">※ 소속팀은 선택 사항입니다. 자기 소속팀에는 투자할 수 없습니다.</div>
+        <div class="hint">※ 사용포인트/남은포인트는 투자내역 기준으로 자동 계산됩니다.</div>
+      </div>
+      <div id="investmentsTab" class="tab-content">
+        <div class="section-header"><h2>투자내역</h2><button id="clearInvestmentsBtn" class="delete-all-btn">전체 삭제</button></div>
+        <div class="table-wrapper">
+          <table id="investmentsTable" class="data-table">
+            <thead><tr><th>일시</th><th>참여자명</th><th>팀명</th><th>투자금액</th><th>삭제</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <button id="saveAdminBtn" class="save-btn">저장하기</button>
+    </div>
+  </div>
+
+  <!-- Participant Page -->
+  <div id="participantPage" class="page" style="display:none;">
+    <div class="container">
+      <div class="participant-header">
+        <div class="participant-info">
+          <div class="participant-avatar" id="participantAvatar">?</div>
+          <div class="participant-meta">
+            <div class="participant-name" id="fixedParticipantName"></div>
+            <div class="participant-team muted">소속팀: <span id="fixedParticipantTeam">-</span></div>
+          </div>
+        </div>
+        <button id="participantResetBtn" class="ghost-btn small">다시 선택</button>
+      </div>
+      <div class="points-card" id="pointsCard" style="display:none;">
+        <div class="points-item"><div class="points-label">기본포인트</div><div class="points-value" id="basePoints">0</div></div>
+        <div class="points-divider"></div>
+        <div class="points-item"><div class="points-label">사용포인트</div><div class="points-value used" id="spentPoints">0</div></div>
+        <div class="points-divider"></div>
+        <div class="points-item"><div class="points-label">남은포인트</div><div class="points-value remain" id="remainPoints">0</div></div>
+      </div>
+      <div id="myInvestSummary" class="my-invest" style="display:none;">
+        <div class="my-invest-title">내 투자 현황</div>
+        <div id="myInvestList" class="my-invest-list"></div>
+      </div>
+      <div id="teamsContainer" class="teams-container"></div>
+    </div>
+  </div>
+
+  <!-- config.js 에서 CONFIG.API_URL 을 불러옵니다 (깃허브에 올리지 않는 파일) -->
+  <script src="config.js"></script>
+  <script>
+    let state={teams:[],participants:[],investments:[]};
+    let selectedParticipantName="",selectedParticipantTeam="",adminToken="",loadingCount=0;
+
+    function showToast(msg,isError=false){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(isError?" error":"");setTimeout(()=>el.className="toast",1800)}
+    function showLoading(msg="로딩중..."){loadingCount+=1;const ov=document.getElementById("loadingOverlay");ov.querySelector(".loading-text").textContent=msg;ov.style.display="flex"}
+    function hideLoading(){loadingCount=Math.max(0,loadingCount-1);if(loadingCount===0)document.getElementById("loadingOverlay").style.display="none"}
+    async function withLoading(fn,msg="로딩중..."){showLoading(msg);try{return await fn()}finally{hideLoading()}}
+    function n(v){const x=Number(v);return Number.isFinite(x)?x:0}
+    function escapeHtml(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+    function cssEscape(s){return String(s).replace(/\\/g,"\\\\").replace(/"/g,'\\"')}
+    function toISO(v){const d=new Date(v);return Number.isNaN(d.getTime())?String(v??""):d.toISOString()}
+    function formatDateKOR(v){const d=new Date(v);return Number.isNaN(d.getTime())?String(v??""): d.toLocaleString("ko-KR")}
+    function getInitialChar(name){return String(name||"?").charAt(0).toUpperCase()}
+
+    async function apiGetInit(){const r=await fetch(`${CONFIG.API_URL}?action=init`,{method:"GET"});if(!r.ok)throw new Error(`init failed:${r.status}`);return r.json()}
+    async function apiPost(action,payload){const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload})});if(!r.ok)throw new Error(`post failed:${r.status}`);return r.json()}
+
+    function computeAggregates(){
+      const s=new Map(),raised=new Map(),backers=new Map();
+      for(const inv of state.investments){
+        const p=String(inv["참여자명"]??"").trim(),t=String(inv["팀명"]??"").trim(),a=n(inv["투자금액"]??0);
+        if(!p||!t||a<=0)continue;
+        s.set(p,(s.get(p)||0)+a);raised.set(t,(raised.get(t)||0)+a);
+        if(!backers.has(t))backers.set(t,new Set());backers.get(t).add(p);
+      }
+      return{spentByParticipant:s,raisedByTeam:raised,backersByTeam:backers};
+    }
+
+    async function loadFromSheet(){
+      const d=await apiGetInit();if(d.error)throw new Error(d.error);
+      state.teams=Array.isArray(d.teams)?d.teams:[];
+      state.participants=Array.isArray(d.participants)?d.participants:[];
+      state.investments=Array.isArray(d.investments)?d.investments:[];
+    }
+
+    function resetToEntry(){
+      selectedParticipantName="";selectedParticipantTeam="";adminToken="";
+      sessionStorage.removeItem("selectedParticipantName");
+      document.getElementById("participantPage").style.display="none";
+      document.getElementById("adminPage").style.display="none";
+      document.getElementById("passwordModal").style.display="none";
+      document.getElementById("entryModal").style.display="flex";
+      document.getElementById("entryStepParticipant").style.display="none";
+      document.getElementById("entryStepType").style.display="block";
+      document.getElementById("entryParticipantSelect").innerHTML=`<option value="">불러오는 중...</option>`;
+      document.getElementById("passwordInput").value="";
+      document.getElementById("passwordError").textContent="";
+    }
+
+    document.getElementById("adminBtn").addEventListener("click",()=>{document.getElementById("entryModal").style.display="none";document.getElementById("passwordModal").style.display="flex"});
+    document.getElementById("participantBtn").addEventListener("click",async()=>{document.getElementById("entryStepType").style.display="none";document.getElementById("entryStepParticipant").style.display="block";await withLoading(fillParticipantDropdown,"참여자 목록 불러오는 중...")});
+    document.getElementById("entryParticipantBack").addEventListener("click",()=>{document.getElementById("entryStepParticipant").style.display="none";document.getElementById("entryStepType").style.display="block"});
+    document.getElementById("entryParticipantEnter").addEventListener("click",async()=>{
+      const name=document.getElementById("entryParticipantSelect").value;
+      if(!name)return showToast("참여자를 선택해주세요",true);
+      selectedParticipantName=name;
+      const p=state.participants.find(x=>String(x["참여자명"]??"").trim()===name);
+      selectedParticipantTeam=String(p?.["소속팀"]??"").trim();
+      sessionStorage.setItem("selectedParticipantName",name);
+      document.getElementById("entryModal").style.display="none";
+      document.getElementById("participantPage").style.display="block";
+      await withLoading(initParticipantPage,"화면 준비중...");
+    });
+    document.getElementById("passwordCancel").addEventListener("click",()=>resetToEntry());
+    document.getElementById("passwordSubmit").addEventListener("click",async()=>{
+      const pw=document.getElementById("passwordInput").value.trim();
+      const err=document.getElementById("passwordError");
+      if(!pw){err.textContent="비밀번호를 입력해주세요";return}
+      await withLoading(async()=>{
+        try{
+          const resp=await apiPost("adminLogin",{password:pw});
+          if(!resp.success){err.textContent="비밀번호가 일치하지 않습니다";return}
+          adminToken=resp.token||"";err.textContent="";
+          document.getElementById("passwordModal").style.display="none";
+          document.getElementById("adminPage").style.display="block";
+          await initAdminPage();
+        }catch(e){console.error(e);err.textContent="로그인에 실패했습니다"}
+      },"로그인중...");
+    });
+    document.getElementById("passwordInput").addEventListener("keypress",e=>{if(e.key==="Enter")document.getElementById("passwordSubmit").click()});
+
+    document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>{
+      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+      btn.classList.add("active");document.getElementById(btn.dataset.tab+"Tab").classList.add("active");
+    }));
+
+    async function fillParticipantDropdown(){
+      try{
+        await loadFromSheet();
+        const sel=document.getElementById("entryParticipantSelect");
+        sel.innerHTML=`<option value="">참여자를 선택하세요</option>`;
+        state.participants.forEach(p=>{const name=String(p["참여자명"]??"").trim();if(!name)return;const o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o)});
+      }catch(e){console.error(e);document.getElementById("entryParticipantSelect").innerHTML=`<option value="">불러오기 실패</option>`;showToast("참여자 목록을 불러오지 못했습니다",true)}
+    }
+
+    async function initAdminPage(){await loadFromSheet();document.getElementById("lastSyncText").textContent=`마지막 동기화: ${new Date().toLocaleString("ko-KR")}`;renderAdminAll()}
+    document.getElementById("syncBtn").addEventListener("click",async()=>{await withLoading(async()=>{try{await initAdminPage();showToast("불러오기 완료")}catch(e){console.error(e);showToast("불러오기에 실패했습니다",true)}},"불러오는 중...")});
+    function renderAdminAll(){renderTeamsTable();renderParticipantsTable();renderInvestmentsTable()}
+
+    function renderTeamsTable(){
+      const tbody=document.querySelector("#teamsTable tbody");tbody.innerHTML="";
+      const{raisedByTeam:r,backersByTeam:b}=computeAggregates();
+      state.teams.forEach((t,i)=>{
+        const name=String(t["팀명"]??"").trim();
+        const raised=r.get(name)||0,backers=b.has(name)?b.get(name).size:0;
+        const row=document.createElement("tr");
+        row.innerHTML=`<td><input type="text" value="${escapeHtml(name)}" data-type="team" data-field="팀명" data-index="${i}"></td><td><textarea data-type="team" data-field="주제" data-index="${i}">${escapeHtml(t["주제"]??"")}</textarea></td><td><textarea data-type="team" data-field="세부설명" data-index="${i}">${escapeHtml(t["세부설명"]??"")}</textarea></td><td><input type="text" value="${escapeHtml(t["이미지파일명"]??"")}" data-type="team" data-field="이미지파일명" data-index="${i}" placeholder="예: team1.jpg"></td><td><input type="number" class="readonly" value="${raised}" readonly></td><td><input type="number" class="readonly" value="${backers}" readonly></td><td><button class="delete-row-btn" data-index="${i}">삭제</button></td>`;
+        tbody.appendChild(row);
+      });
+      tbody.querySelectorAll(".delete-row-btn").forEach(btn=>btn.addEventListener("click",e=>{state.teams.splice(parseInt(e.target.dataset.index,10),1);renderTeamsTable()}));
+      tbody.querySelectorAll("[data-type='team']").forEach(inp=>inp.addEventListener("input",e=>{state.teams[parseInt(e.target.dataset.index,10)][e.target.dataset.field]=e.target.value}));
+    }
+
+    function renderParticipantsTable(){
+      const tbody=document.querySelector("#participantsTable tbody");tbody.innerHTML="";
+      const{spentByParticipant:s}=computeAggregates();
+      state.participants.forEach((p,i)=>{
+        const name=String(p["참여자명"]??"").trim(),team=String(p["소속팀"]??"").trim();
+        const base=n(p["기본포인트"]),spent=s.get(name)||0,remain=base-spent;
+        const row=document.createElement("tr");
+        row.innerHTML=`<td><input type="text" value="${escapeHtml(name)}" data-type="participant" data-field="참여자명" data-index="${i}"></td><td><input type="text" value="${escapeHtml(team)}" data-type="participant" data-field="소속팀" data-index="${i}"></td><td><input type="number" value="${base}" data-type="participant" data-field="기본포인트" data-index="${i}"></td><td><input type="number" class="readonly" value="${spent}" readonly></td><td><input type="number" class="readonly" value="${remain}" readonly></td><td><button class="delete-row-btn" data-index="${i}">삭제</button></td>`;
+        tbody.appendChild(row);
+      });
+      tbody.querySelectorAll(".delete-row-btn").forEach(btn=>btn.addEventListener("click",e=>{state.participants.splice(parseInt(e.target.dataset.index,10),1);renderParticipantsTable()}));
+      tbody.querySelectorAll("[data-type='participant']").forEach(inp=>inp.addEventListener("input",e=>{const idx=parseInt(e.target.dataset.index,10),field=e.target.dataset.field;state.participants[idx][field]=(field==="기본포인트")?n(e.target.value):e.target.value}));
+    }
+
+    function renderInvestmentsTable(){
+      const tbody=document.querySelector("#investmentsTable tbody");tbody.innerHTML="";
+      state.investments.forEach(inv=>{
+        const tsRaw=inv["일시"],tsIso=toISO(tsRaw);
+        const participantName=String(inv["참여자명"]??"").trim(),teamName=String(inv["팀명"]??"").trim(),amount=n(inv["투자금액"]??0);
+        const row=document.createElement("tr");
+        row.innerHTML=`<td>${escapeHtml(formatDateKOR(tsRaw))}</td><td>${escapeHtml(participantName)}</td><td>${escapeHtml(teamName)}</td><td>${amount.toLocaleString()}</td><td><button class="delete-row-btn">삭제</button></td>`;
+        tbody.appendChild(row);
+        row.querySelector(".delete-row-btn").addEventListener("click",async()=>{
+          if(!confirm("이 투자내역을 삭제할까요?"))return;
+          await withLoading(async()=>{
+            try{const resp=await apiPost("deleteInvestment",{token:adminToken,ts:tsIso,participantName,teamName,amount});if(!resp.success){if(resp.error==="unauthorized"){showToast("관리자 인증이 만료되었습니다.",true);resetToEntry();return}throw new Error(resp.error||"delete failed")}await loadFromSheet();renderAdminAll();showToast("삭제되었습니다")}catch(e){console.error(e);showToast("삭제에 실패했습니다",true)}
+          },"삭제 처리중...");
+        });
+      });
+    }
+
+    document.getElementById("addTeamBtn").addEventListener("click",()=>{state.teams.push({"팀명":"","주제":"","세부설명":"","이미지파일명":""});renderTeamsTable()});
+    document.getElementById("addParticipantBtn").addEventListener("click",()=>{state.participants.push({"참여자명":"","소속팀":"","기본포인트":0});renderParticipantsTable()});
+
+    document.getElementById("saveAdminBtn").addEventListener("click",async()=>{
+      const saveBtn=document.getElementById("saveAdminBtn");
+      await withLoading(async()=>{
+        try{
+          const tn=new Set();
+          for(const t of state.teams){const name=String(t["팀명"]??"").trim();if(!name)return showToast("팀명을 입력해주세요",true);if(tn.has(name))return showToast(`팀명 중복: ${name}`,true);tn.add(name)}
+          const pn=new Set();
+          for(const p of state.participants){const name=String(p["참여자명"]??"").trim();if(!name)return showToast("참여자명을 입력해주세요",true);if(pn.has(name))return showToast(`참여자명 중복: ${name}`,true);pn.add(name)}
+          saveBtn.disabled=true;saveBtn.textContent="저장중...";
+          const r1=await apiPost("saveTeams",{token:adminToken,teams:state.teams});
+          if(!r1.success){if(r1.error==="unauthorized"){showToast("관리자 인증이 만료되었습니다.",true);resetToEntry();return}throw new Error(r1.error||"saveTeams failed")}
+          const r2=await apiPost("saveParticipants",{token:adminToken,participants:state.participants});
+          if(!r2.success){if(r2.error==="unauthorized"){showToast("관리자 인증이 만료되었습니다.",true);resetToEntry();return}throw new Error(r2.error||"saveParticipants failed")}
+          await loadFromSheet();renderAdminAll();showToast("저장되었습니다");
+        }catch(e){console.error(e);showToast("저장에 실패했습니다",true)}
+        finally{saveBtn.disabled=false;saveBtn.textContent="저장하기"}
+      },"저장중...");
+    });
+
+    document.getElementById("clearInvestmentsBtn").addEventListener("click",async()=>{
+      if(!confirm("모든 투자내역을 삭제하시겠습니까?"))return;
+      await withLoading(async()=>{
+        try{const r=await apiPost("clearInvestments",{token:adminToken});if(!r.success){if(r.error==="unauthorized"){showToast("관리자 인증이 만료되었습니다.",true);resetToEntry();return}throw new Error(r.error||"clear failed")}await loadFromSheet();renderAdminAll();showToast("투자내역이 모두 삭제되었습니다")}catch(e){console.error(e);showToast("전체 삭제에 실패했습니다",true)}
+      },"전체 삭제중...");
+    });
+
+    async function initParticipantPage(){
+      if(state.participants.length===0)await loadFromSheet();
+      const participant=state.participants.find(p=>String(p["참여자명"]??"").trim()===selectedParticipantName);
+      if(!participant){showToast("참여자 정보를 찾을 수 없습니다",true);resetToEntry();return}
+      selectedParticipantTeam=String(participant["소속팀"]??"").trim();
+      document.getElementById("fixedParticipantName").textContent=selectedParticipantName;
+      document.getElementById("fixedParticipantTeam").textContent=selectedParticipantTeam||"-";
+      document.getElementById("participantAvatar").textContent=getInitialChar(selectedParticipantName);
+      document.getElementById("participantResetBtn").onclick=()=>resetToEntry();
+      renderParticipantPage();
+    }
+
+    function renderParticipantPage(){
+      const{spentByParticipant:s}=computeAggregates();
+      const participant=state.participants.find(p=>String(p["참여자명"]??"").trim()===selectedParticipantName);
+      if(!participant)return;
+      const base=n(participant["기본포인트"]),spent=s.get(selectedParticipantName)||0,remain=base-spent;
+      document.getElementById("basePoints").textContent=base.toLocaleString();
+      document.getElementById("spentPoints").textContent=spent.toLocaleString();
+      document.getElementById("remainPoints").textContent=remain.toLocaleString();
+      document.getElementById("pointsCard").style.display="flex";
+      renderMyInvestSummary();renderTeamCards();
+    }
+
+    function renderMyInvestSummary(){
+      const wrap=document.getElementById("myInvestSummary"),list=document.getElementById("myInvestList");
+      const invs=state.investments.filter(inv=>String(inv["참여자명"]??"").trim()===selectedParticipantName).map(inv=>({team:String(inv["팀명"]??"").trim(),amt:n(inv["투자금액"]??0)})).filter(x=>x.team&&x.amt>0);
+      if(invs.length===0){wrap.style.display="none";return}
+      const sum=new Map();for(const x of invs)sum.set(x.team,(sum.get(x.team)||0)+x.amt);
+      wrap.style.display="block";list.innerHTML="";
+      [...sum.entries()].forEach(([team,total])=>{const row=document.createElement("div");row.className="my-invest-row";row.innerHTML=`<div class="mi-team">${escapeHtml(team)}</div><div class="mi-amt">${Number(total).toLocaleString()} P</div>`;list.appendChild(row)});
+    }
+
+    function renderTeamCards(){
+      const container=document.getElementById("teamsContainer");container.innerHTML="";
+      const{raisedByTeam:r,backersByTeam:b}=computeAggregates();
+      state.teams.forEach(team=>{
+        const teamName=String(team["팀명"]??"").trim(),topic=String(team["주제"]??""),detail=String(team["세부설명"]??""),imageUrl=String(team["이미지URL"]??"").trim();
+        const raised=r.get(teamName)||0,backers=b.has(teamName)?b.get(teamName).size:0;
+        const isOwnTeam=selectedParticipantTeam&&selectedParticipantTeam===teamName;
+        const imageHtml=imageUrl?`<img class="team-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(teamName)}" loading="lazy">`:`<div class="team-image-placeholder">이미지 없음</div>`;
+        const card=document.createElement("div");card.className="team-card";
+        card.innerHTML=`${imageHtml}<div class="team-card-body"><div class="team-header"><div class="team-name">${escapeHtml(teamName)}</div><div class="team-badge">투자자 ${backers}명 · ${raised.toLocaleString()}P</div></div><div class="team-grid"><div class="team-info-box"><div class="team-info-label">주제</div><div class="team-info-value">${escapeHtml(topic)}</div></div><div class="team-info-box"><div class="team-info-label">세부설명</div><div class="team-info-value">${escapeHtml(detail)}</div></div></div><div class="investment-section">${isOwnTeam?`<div class="investment-notice blocked">⚠ 소속팀에는 투자할 수 없습니다</div>`:`<div class="investment-notice">한 번 투자하면 수정이 불가합니다. 신중하게 투자해주세요.</div><div class="investment-row"><input type="text" class="investment-input" placeholder="투자 포인트 입력" data-team="${escapeHtml(teamName)}" inputmode="numeric"><button class="invest-btn" data-team="${escapeHtml(teamName)}">투자하기</button></div><div class="input-error" data-team="${escapeHtml(teamName)}"></div>`}</div></div>`;
+        if(!isOwnTeam){
+          const input=card.querySelector(".investment-input"),errorDiv=card.querySelector(".input-error");
+          input.addEventListener("input",e=>{const c=e.target.value.replace(/[^0-9]/g,"");if(e.target.value!==c){e.target.value=c;errorDiv.textContent="숫자만 입력해주세요";e.target.classList.add("error")}else{errorDiv.textContent="";e.target.classList.remove("error")}});
+          card.querySelector(".invest-btn").addEventListener("click",async()=>await handleInvestment(teamName));
+        }
+        container.appendChild(card);
+      });
+    }
+
+    async function handleInvestment(teamName){
+      const input=document.querySelector(`.investment-input[data-team="${cssEscape(teamName)}"]`);
+      const button=document.querySelector(`.invest-btn[data-team="${cssEscape(teamName)}"]`);
+      const errorDiv=document.querySelector(`.input-error[data-team="${cssEscape(teamName)}"]`);
+      const value=(input?.value||"").trim();
+      if(!value){errorDiv.textContent="투자 포인트를 입력해주세요";return}
+      if(!/^\d+$/.test(value)){errorDiv.textContent="숫자만 입력해주세요";return}
+      const amount=parseInt(value,10);
+      if(amount<=0){errorDiv.textContent="0보다 큰 금액을 입력해주세요";return}
+      const{spentByParticipant:s}=computeAggregates();
+      const participant=state.participants.find(p=>String(p["참여자명"]??"").trim()===selectedParticipantName);
+      if(!participant)return showToast("참여자 정보를 찾을 수 없습니다",true);
+      const base=n(participant["기본포인트"]),spent=s.get(selectedParticipantName)||0,remain=base-spent;
+      if(amount>remain){showToast("포인트가 부족합니다",true);return}
+      button.disabled=true;button.textContent="처리중...";
+      await withLoading(async()=>{
+        try{
+          const resp=await apiPost("invest",{participantName:selectedParticipantName,teamName,amount});
+          if(!resp.success){
+            if(resp.error==="insufficient points")showToast("포인트가 부족합니다",true);
+            else if(resp.error==="participant not found")showToast("참여자 정보를 찾을 수 없습니다",true);
+            else if(resp.error==="team not found")showToast("팀 정보를 찾을 수 없습니다",true);
+            else showToast("투자에 실패했습니다",true);
+            await loadFromSheet();renderParticipantPage();return;
+          }
+          await loadFromSheet();input.value="";errorDiv.textContent="";renderParticipantPage();showToast("투자가 완료되었습니다 ✓");
+        }catch(e){console.error(e);showToast("투자에 실패했습니다",true)}
+        finally{button.disabled=false;button.textContent="투자하기"}
+      },"투자 반영중...");
+    }
+
+    (async function init(){
+      const saved=sessionStorage.getItem("selectedParticipantName");
+      if(saved){
+        selectedParticipantName=saved;
+        document.getElementById("entryModal").style.display="none";
+        document.getElementById("participantPage").style.display="block";
+        await withLoading(async()=>{
+          try{
+            await loadFromSheet();
+            const exists=state.participants.some(p=>String(p["참여자명"]??"").trim()===saved);
+            if(!exists){resetToEntry();return}
+            const p=state.participants.find(x=>String(x["참여자명"]??"").trim()===saved);
+            selectedParticipantTeam=String(p?.["소속팀"]??"").trim();
+            await initParticipantPage();
+          }catch(e){console.error(e);resetToEntry()}
+        },"화면 준비중...");
+      }else{resetToEntry()}
+    })();
+  </script>
+</body>
+</html>
