@@ -2,7 +2,7 @@
 //  ★ 여기만 수정하세요 ★
 //  앱스 스크립트 배포 후 받은 웹앱 URL을 아래에 붙여넣으세요.
 // ================================================================
-const API_URL = "여기에_앱스스크립트_웹앱_URL_입력";
+const API_URL = "https://script.google.com/macros/s/AKfycbx01uwjX9TGc6GMAhb-27jDGwjOhWJqTgtF-rQCP4YHV-_537Q04hHJ_jLCX9Rl3b2P/exec";
 // ================================================================
 
 let state = { teams: [], investors: [], investments: [], ranking: [] };
