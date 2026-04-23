@@ -221,6 +221,7 @@
       </div>
       <div id="teamsTab" class="tab-content active">
         <div class="section-header"><h2>팀 목록</h2><button id="addTeamBtn" class="add-btn">+ 행 추가</button></div>
+        <div class="hint" id="teamsDeleteHint" style="color:var(--amber);font-weight:700;min-height:16px;"></div>
         <div class="table-wrapper">
           <table id="teamsTable" class="data-table">
             <thead><tr><th>팀명</th><th>주제</th><th>세부설명</th><th>이미지파일명</th><th>모인포인트</th><th>투자자수</th><th>삭제</th></tr></thead>
@@ -232,6 +233,7 @@
       </div>
       <div id="investorsTab" class="tab-content">
         <div class="section-header"><h2>투자자 목록</h2><button id="addInvestorBtn" class="add-btn">+ 행 추가</button></div>
+        <div class="hint" id="investorsDeleteHint" style="color:var(--amber);font-weight:700;min-height:16px;"></div>
         <div class="table-wrapper">
           <table id="investorsTable" class="data-table">
             <thead><tr><th>연번</th><th>투자자명</th><th>소속팀</th><th>기본포인트</th><th>사용포인트</th><th>남은포인트</th><th>삭제</th></tr></thead>
@@ -252,7 +254,8 @@
         </div>
       </div>
       <div id="rankingTab" class="tab-content">
-        <div class="section-header"><h2>순위</h2><span class="muted">투자내역 기준 자동 계산</span></div>
+        <div class="section-header"><h2>순위</h2><button id="recalcRankingBtn" class="ghost-btn">↻ 순위 재계산</button></div>
+        <div class="hint">※ 구글시트에서 투자내역을 직접 수정했을 때 이 버튼을 눌러 순위를 갱신하세요.</div>
         <div class="table-wrapper">
           <table id="rankingTable" class="data-table">
             <thead><tr><th>순위</th><th>팀명</th><th>모인포인트</th><th>투자자수</th></tr></thead>

@@ -6,6 +6,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbx01uwjX9TGc6GMAhb-27jD
 // ================================================================
 
 let state = { teams: [], investors: [], investments: [], ranking: [] };
+let pendingDeleteTeams       = new Set(); // 삭제 대기 인덱스
+let pendingDeleteInvestors   = new Set();
 let pendingDeleteInvestments = []; // 삭제 대기 중인 투자내역 (저장하기 전까지 실제 삭제 안 됨)
 let selectedSeq  = "";  // 선택된 투자자 연번
 let selectedName = "";  // 선택된 투자자명
@@ -91,6 +93,8 @@ async function loadFromSheet() {
   state.investors   = Array.isArray(data.investors)   ? data.investors   : [];
   state.investments = Array.isArray(data.investments) ? data.investments : [];
   state.ranking     = Array.isArray(data.ranking)     ? data.ranking     : [];
+  pendingDeleteTeams       = new Set();
+  pendingDeleteInvestors   = new Set();
   pendingDeleteInvestments = []; // 새로고침하면 삭제 대기 초기화
 }
 
@@ -238,24 +242,33 @@ function renderTeamsTable() {
     const name    = String(t["팀명"] ?? "").trim();
     const raised  = raisedByTeam.get(name) || 0;
     const backers = backersByTeam.has(name) ? backersByTeam.get(name).size : 0;
+    const isPending = pendingDeleteTeams.has(i);
     const row = document.createElement("tr");
+    if (isPending) row.style.cssText = "opacity:.4;text-decoration:line-through;background:var(--red-bg);";
     row.innerHTML = `
-      <td><input type="text" value="${escapeHtml(name)}" data-type="team" data-field="팀명" data-index="${i}"></td>
-      <td><textarea data-type="team" data-field="주제" data-index="${i}">${escapeHtml(t["주제"] ?? "")}</textarea></td>
-      <td><textarea data-type="team" data-field="세부설명" data-index="${i}">${escapeHtml(t["세부설명"] ?? "")}</textarea></td>
-      <td><input type="text" value="${escapeHtml(t["이미지파일명"] ?? "")}" data-type="team" data-field="이미지파일명" data-index="${i}" placeholder="예: team1.jpg"></td>
+      <td><input type="text" value="${escapeHtml(name)}" data-type="team" data-field="팀명" data-index="${i}" ${isPending?"disabled":""}></td>
+      <td><textarea data-type="team" data-field="주제" data-index="${i}" ${isPending?"disabled":""}>${escapeHtml(t["주제"] ?? "")}</textarea></td>
+      <td><textarea data-type="team" data-field="세부설명" data-index="${i}" ${isPending?"disabled":""}>${escapeHtml(t["세부설명"] ?? "")}</textarea></td>
+      <td><input type="text" value="${escapeHtml(t["이미지파일명"] ?? "")}" data-type="team" data-field="이미지파일명" data-index="${i}" placeholder="예: team1.jpg" ${isPending?"disabled":""}></td>
       <td><input type="number" class="readonly" value="${raised}" readonly></td>
       <td><input type="number" class="readonly" value="${backers}" readonly></td>
-      <td><button class="delete-row-btn" data-index="${i}">삭제</button></td>
+      <td>${isPending
+        ? `<button class="ghost-btn" data-undo="${i}">되돌리기</button>`
+        : `<button class="delete-row-btn" data-del="${i}">삭제</button>`
+      }</td>
     `;
     tbody.appendChild(row);
+    if (isPending) {
+      row.querySelector("[data-undo]").addEventListener("click", () => { pendingDeleteTeams.delete(i); renderTeamsTable(); });
+    } else {
+      row.querySelector("[data-del]").addEventListener("click", () => { pendingDeleteTeams.add(i); renderTeamsTable(); });
+    }
   });
-  tbody.querySelectorAll(".delete-row-btn").forEach(btn =>
-    btn.addEventListener("click", e => { state.teams.splice(parseInt(e.target.dataset.index,10),1); renderTeamsTable(); })
-  );
   tbody.querySelectorAll("[data-type='team']").forEach(inp =>
     inp.addEventListener("input", e => { state.teams[parseInt(e.target.dataset.index,10)][e.target.dataset.field] = e.target.value; })
   );
+  const hint = document.getElementById("teamsDeleteHint");
+  if (hint) hint.textContent = pendingDeleteTeams.size > 0 ? `⚠ 삭제 대기 ${pendingDeleteTeams.size}건 — 저장하기를 눌러야 실제 삭제됩니다` : "";
 }
 
 function renderInvestorsTable() {
@@ -269,27 +282,36 @@ function renderInvestorsTable() {
     const base   = n(p["기본포인트"]);
     const spent  = spentByInvestor.get(name + "|" + team) || 0;
     const remain = base - spent;
+    const isPending = pendingDeleteInvestors.has(i);
     const row = document.createElement("tr");
+    if (isPending) row.style.cssText = "opacity:.4;text-decoration:line-through;background:var(--red-bg);";
     row.innerHTML = `
-      <td><input type="text" value="${escapeHtml(seq)}" data-type="investor" data-field="연번" data-index="${i}"></td>
-      <td><input type="text" value="${escapeHtml(name)}" data-type="investor" data-field="투자자명" data-index="${i}"></td>
-      <td><input type="text" value="${escapeHtml(team)}" data-type="investor" data-field="소속팀" data-index="${i}"></td>
-      <td><input type="number" value="${base}" data-type="investor" data-field="기본포인트" data-index="${i}"></td>
+      <td><input type="text" value="${escapeHtml(seq)}" data-type="investor" data-field="연번" data-index="${i}" ${isPending?"disabled":""}></td>
+      <td><input type="text" value="${escapeHtml(name)}" data-type="investor" data-field="투자자명" data-index="${i}" ${isPending?"disabled":""}></td>
+      <td><input type="text" value="${escapeHtml(team)}" data-type="investor" data-field="소속팀" data-index="${i}" ${isPending?"disabled":""}></td>
+      <td><input type="number" value="${base}" data-type="investor" data-field="기본포인트" data-index="${i}" ${isPending?"disabled":""}></td>
       <td><input type="number" class="readonly" value="${spent}" readonly></td>
       <td><input type="number" class="readonly" value="${remain}" readonly></td>
-      <td><button class="delete-row-btn" data-index="${i}">삭제</button></td>
+      <td>${isPending
+        ? `<button class="ghost-btn" data-undo="${i}">되돌리기</button>`
+        : `<button class="delete-row-btn" data-del="${i}">삭제</button>`
+      }</td>
     `;
     tbody.appendChild(row);
+    if (isPending) {
+      row.querySelector("[data-undo]").addEventListener("click", () => { pendingDeleteInvestors.delete(i); renderInvestorsTable(); });
+    } else {
+      row.querySelector("[data-del]").addEventListener("click", () => { pendingDeleteInvestors.add(i); renderInvestorsTable(); });
+    }
   });
-  tbody.querySelectorAll(".delete-row-btn").forEach(btn =>
-    btn.addEventListener("click", e => { state.investors.splice(parseInt(e.target.dataset.index,10),1); renderInvestorsTable(); })
-  );
   tbody.querySelectorAll("[data-type='investor']").forEach(inp =>
     inp.addEventListener("input", e => {
       const idx = parseInt(e.target.dataset.index,10), field = e.target.dataset.field;
       state.investors[idx][field] = (field === "기본포인트") ? n(e.target.value) : e.target.value;
     })
   );
+  const hint = document.getElementById("investorsDeleteHint");
+  if (hint) hint.textContent = pendingDeleteInvestors.size > 0 ? `⚠ 삭제 대기 ${pendingDeleteInvestors.size}건 — 저장하기를 눌러야 실제 삭제됩니다` : "";
 }
 
 function renderInvestmentsTable() {
@@ -369,6 +391,11 @@ document.getElementById("saveAdminBtn").addEventListener("click", async () => {
         seqs.add(seq);
       }
       saveBtn.disabled = true; saveBtn.textContent = "저장중...";
+
+      // 삭제 대기 팀/투자자 반영 (인덱스 큰 것부터 제거해야 순서 안 밀림)
+      [...pendingDeleteTeams].sort((a,b) => b-a).forEach(i => state.teams.splice(i, 1));
+      [...pendingDeleteInvestors].sort((a,b) => b-a).forEach(i => state.investors.splice(i, 1));
+
       const r1 = await apiPost("saveTeams",     { password: adminPassword, teams:     state.teams });
       if (!r1.success) throw new Error(r1.error || "saveTeams failed");
       const r2 = await apiPost("saveInvestors", { password: adminPassword, investors: state.investors });
@@ -395,6 +422,17 @@ document.getElementById("clearInvestmentsBtn").addEventListener("click", async (
       await loadFromSheet(); renderAdminAll(); showToast("투자내역이 모두 삭제되었습니다");
     } catch (e) { console.error(e); showToast("전체 삭제에 실패했습니다", true); }
   }, "전체 삭제중...");
+});
+
+document.getElementById("recalcRankingBtn").addEventListener("click", async () => {
+  if (!confirm("구글시트 투자내역 기준으로 순위를 재계산할까요?")) return;
+  await withLoading(async () => {
+    try {
+      const r = await apiPost("recalcRanking", { password: adminPassword });
+      if (!r.success) throw new Error(r.error || "recalc failed");
+      await loadFromSheet(); renderAdminAll(); showToast("순위가 재계산되었습니다 ✓");
+    } catch (e) { console.error(e); showToast("재계산에 실패했습니다", true); }
+  }, "순위 재계산중...");
 });
 
 // ===== Investor Page =====
