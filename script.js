@@ -424,17 +424,6 @@ document.getElementById("clearInvestmentsBtn").addEventListener("click", async (
   }, "전체 삭제중...");
 });
 
-document.getElementById("recalcRankingBtn").addEventListener("click", async () => {
-  if (!confirm("구글시트 투자내역 기준으로 순위를 재계산할까요?")) return;
-  await withLoading(async () => {
-    try {
-      const r = await apiPost("recalcRanking", { password: adminPassword });
-      if (!r.success) throw new Error(r.error || "recalc failed");
-      await loadFromSheet(); renderAdminAll(); showToast("순위가 재계산되었습니다 ✓");
-    } catch (e) { console.error(e); showToast("재계산에 실패했습니다", true); }
-  }, "순위 재계산중...");
-});
-
 // ===== Investor Page =====
 async function initInvestorPage() {
   if (state.investors.length === 0) await loadFromSheet();
