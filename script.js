@@ -2,7 +2,7 @@
 //  ★ 여기만 수정하세요 ★
 //  앱스 스크립트 배포 후 받은 웹앱 URL을 아래에 붙여넣으세요.
 // ================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbx01uwjX9TGc6GMAhb-27jDGwjOhWJqTgtF-rQCP4YHV-_537Q04hHJ_jLCX9Rl3b2P/exec";
+const API_URL = "여기에_앱스스크립트_웹앱_URL_입력";
 // ================================================================
 
 let state = { teams: [], investors: [], investments: [] };
@@ -196,7 +196,38 @@ document.getElementById("syncBtn").addEventListener("click", async () => {
     catch (e) { console.error(e); showToast("불러오기에 실패했습니다", true); }
   }, "불러오는 중...");
 });
-function renderAdminAll() { renderTeamsTable(); renderInvestorsTable(); renderInvestmentsTable(); }
+function renderAdminAll() { renderTeamsTable(); renderInvestorsTable(); renderInvestmentsTable(); renderRankingTable(); }
+
+function renderRankingTable() {
+  const tbody = document.querySelector("#rankingTable tbody");
+  tbody.innerHTML = "";
+  const { raisedByTeam, backersByTeam } = computeAggregates();
+
+  const rows = state.teams.map(t => {
+    const name    = String(t["팀명"] ?? "").trim();
+    const raised  = raisedByTeam.get(name) || 0;
+    const backers = backersByTeam.has(name) ? backersByTeam.get(name).size : 0;
+    return { name, raised, backers };
+  });
+  rows.sort((a, b) => b.raised - a.raised);
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
+    tr.innerHTML = `
+      <td style="font-weight:800;font-size:15px;">${medal} ${i + 1}</td>
+      <td style="font-weight:700;">${escapeHtml(r.name)}</td>
+      <td style="font-weight:800;color:var(--blue);">${r.raised.toLocaleString()} P</td>
+      <td>${r.backers}명</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if (rows.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="4" style="text-align:center;color:var(--ink-muted);padding:20px;">데이터 없음</td>`;
+    tbody.appendChild(tr);
+  }
+}
 
 function renderTeamsTable() {
   const tbody = document.querySelector("#teamsTable tbody");

@@ -116,7 +116,7 @@
     .teams-container{display:flex;flex-direction:column;gap:12px}
     .team-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow .2s,transform .2s}
     .team-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
-    .team-image{width:100%;max-height:260px;object-fit:cover;display:block;background:var(--surface-2)}
+    .team-image{width:100%;height:auto;display:block;background:var(--surface-2)}
     .team-image-placeholder{height:140px;background:var(--surface-2);border-bottom:1px solid var(--border-soft);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
     .team-card-body{padding:16px}
     .team-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
@@ -217,6 +217,7 @@
         <button class="tab-btn active" data-tab="teams">팀 목록</button>
         <button class="tab-btn" data-tab="investors">투자자 목록</button>
         <button class="tab-btn" data-tab="investments">투자내역</button>
+        <button class="tab-btn" data-tab="ranking">순위</button>
       </div>
       <div id="teamsTab" class="tab-content active">
         <div class="section-header"><h2>팀 목록</h2><button id="addTeamBtn" class="add-btn">+ 행 추가</button></div>
@@ -245,6 +246,15 @@
         <div class="table-wrapper">
           <table id="investmentsTable" class="data-table">
             <thead><tr><th>일시</th><th>투자자명</th><th>투자자팀명</th><th>피투자팀명</th><th>투자금액</th><th>삭제</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="rankingTab" class="tab-content">
+        <div class="section-header"><h2>순위</h2><span class="muted">투자내역 기준 자동 계산</span></div>
+        <div class="table-wrapper">
+          <table id="rankingTable" class="data-table">
+            <thead><tr><th>순위</th><th>팀명</th><th>모인포인트</th><th>투자자수</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
