@@ -2,10 +2,11 @@
 //  ★ 여기만 수정하세요 ★
 //  앱스 스크립트 배포 후 받은 웹앱 URL을 아래에 붙여넣으세요.
 // ================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbx01uwjX9TGc6GMAhb-27jDGwjOhWJqTgtF-rQCP4YHV-_537Q04hHJ_jLCX9Rl3b2P/exec";
+const API_URL = "여기에_앱스스크립트_웹앱_URL_입력";
 // ================================================================
 
 let state = { teams: [], investors: [], investments: [], ranking: [] };
+let pendingDeleteInvestments = []; // 삭제 대기 중인 투자내역 (저장하기 전까지 실제 삭제 안 됨)
 let selectedSeq  = "";  // 선택된 투자자 연번
 let selectedName = "";  // 선택된 투자자명
 let selectedTeam = "";  // 선택된 투자자 소속팀
@@ -90,6 +91,7 @@ async function loadFromSheet() {
   state.investors   = Array.isArray(data.investors)   ? data.investors   : [];
   state.investments = Array.isArray(data.investments) ? data.investments : [];
   state.ranking     = Array.isArray(data.ranking)     ? data.ranking     : [];
+  pendingDeleteInvestments = []; // 새로고침하면 삭제 대기 초기화
 }
 
 // ===== Entry =====
@@ -293,34 +295,48 @@ function renderInvestorsTable() {
 function renderInvestmentsTable() {
   const tbody = document.querySelector("#investmentsTable tbody");
   tbody.innerHTML = "";
-  state.investments.forEach(inv => {
+  state.investments.forEach((inv, idx) => {
     const tsRaw      = inv["일시"];
     const tsIso      = toISO(tsRaw);
     const invName    = String(inv["투자자명"]   ?? "").trim();
     const invTeam    = String(inv["투자자팀명"] ?? "").trim();
     const targetTeam = String(inv["피투자팀명"] ?? "").trim();
     const amount     = n(inv["투자금액"] ?? 0);
+
+    const isPending = pendingDeleteInvestments.some(p => p._idx === idx);
+
     const row = document.createElement("tr");
+    if (isPending) row.style.cssText = "opacity:.4;text-decoration:line-through;background:var(--red-bg);";
     row.innerHTML = `
       <td>${escapeHtml(formatDateKOR(tsRaw))}</td>
       <td>${escapeHtml(invName)}</td>
       <td>${escapeHtml(invTeam)}</td>
       <td>${escapeHtml(targetTeam)}</td>
       <td>${amount.toLocaleString()}</td>
-      <td><button class="delete-row-btn">삭제</button></td>
+      <td>${isPending
+        ? `<button class="ghost-btn" data-undo="${idx}">되돌리기</button>`
+        : `<button class="delete-row-btn" data-del="${idx}">삭제</button>`
+      }</td>
     `;
     tbody.appendChild(row);
-    row.querySelector(".delete-row-btn").addEventListener("click", async () => {
-      if (!confirm("이 투자내역을 삭제할까요?")) return;
-      await withLoading(async () => {
-        try {
-          const resp = await apiPost("deleteInvestment", { password: adminPassword, ts: tsIso, investorName: invName, investorTeam: invTeam, targetTeam, amount });
-          if (!resp.success) throw new Error(resp.error || "delete failed");
-          await loadFromSheet(); renderAdminAll(); showToast("삭제되었습니다");
-        } catch (e) { console.error(e); showToast("삭제에 실패했습니다", true); }
-      }, "삭제 처리중...");
-    });
+
+    if (isPending) {
+      row.querySelector("[data-undo]").addEventListener("click", () => {
+        pendingDeleteInvestments = pendingDeleteInvestments.filter(p => p._idx !== idx);
+        renderInvestmentsTable();
+      });
+    } else {
+      row.querySelector("[data-del]").addEventListener("click", () => {
+        pendingDeleteInvestments.push({ _idx: idx, ts: tsIso, investorName: invName, investorTeam: invTeam, targetTeam, amount });
+        renderInvestmentsTable();
+      });
+    }
   });
+
+  // 삭제 대기 건수 표시
+  const pendingCount = pendingDeleteInvestments.length;
+  const hint = document.getElementById("investmentsDeleteHint");
+  if (hint) hint.textContent = pendingCount > 0 ? `⚠ 삭제 대기 ${pendingCount}건 — 저장하기를 눌러야 실제 삭제됩니다` : "";
 }
 
 document.getElementById("addTeamBtn").addEventListener("click", () => {
@@ -357,6 +373,13 @@ document.getElementById("saveAdminBtn").addEventListener("click", async () => {
       if (!r1.success) throw new Error(r1.error || "saveTeams failed");
       const r2 = await apiPost("saveInvestors", { password: adminPassword, investors: state.investors });
       if (!r2.success) throw new Error(r2.error || "saveInvestors failed");
+
+      // 투자내역 삭제 대기 건 처리
+      for (const item of pendingDeleteInvestments) {
+        const resp = await apiPost("deleteInvestment", { password: adminPassword, ts: item.ts, investorName: item.investorName, investorTeam: item.investorTeam, targetTeam: item.targetTeam, amount: item.amount });
+        if (!resp.success) throw new Error(resp.error || "deleteInvestment failed");
+      }
+
       await loadFromSheet(); renderAdminAll(); showToast("저장되었습니다");
     } catch (e) { console.error(e); showToast("저장에 실패했습니다", true); }
     finally { saveBtn.disabled = false; saveBtn.textContent = "저장하기"; }
